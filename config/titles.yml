@@ -1,0 +1,39 @@
+# Title + placement catalog (fictional titles — synthetic portfolio data)
+# base_daily_requests = typical ad requests per placement per day before seasonality
+titles:
+  - title_id: PFC
+    title_name: Pitch FC 27
+    genre: sports_soccer
+    platforms: [ps5, xbox, pc]
+    player_pool: 60000
+    placements:
+      - {placement_id: PFC-LED-STADIUM,  placement_name: Stadium LED boards,     ad_format: display, base_daily_requests: 2600, launch_date: 2025-07-15}
+      - {placement_id: PFC-KIT-SPONSOR,  placement_name: Kit sponsor overlay,    ad_format: display, base_daily_requests: 1400, launch_date: 2025-07-15}
+      - {placement_id: PFC-HALFTIME-VID, placement_name: Halftime video,         ad_format: video,   base_daily_requests: 900,  launch_date: 2025-07-15}
+  - title_id: GRD
+    title_name: Gridiron 27
+    genre: sports_football
+    platforms: [ps5, xbox, pc]
+    player_pool: 50000
+    placements:
+      - {placement_id: GRD-ENDZONE,      placement_name: End-zone branding,      ad_format: display, base_daily_requests: 2200, launch_date: 2025-07-15}
+      - {placement_id: GRD-BROADCAST,    placement_name: Broadcast bumper video, ad_format: video,   base_daily_requests: 1100, launch_date: 2025-07-15}
+      - {placement_id: GRD-MENU-BANNER,  placement_name: Main menu banner,       ad_format: display, base_daily_requests: 1300, launch_date: 2025-07-15}
+      # New inventory launched mid-September (Product Mgmt) — must appear in standardized reporting
+      - {placement_id: GRD-SKILLS-CHAL,  placement_name: Sponsored skills challenge, ad_format: display, base_daily_requests: 800, launch_date: 2026-09-10}
+  - title_id: DZL
+    title_name: Dropzone Legends
+    genre: battle_royale
+    platforms: [ps5, xbox, pc]
+    player_pool: 80000
+    placements:
+      - {placement_id: DZL-LOBBY-BILL,   placement_name: Lobby billboard,        ad_format: display, base_daily_requests: 3000, launch_date: 2025-07-15}
+      - {placement_id: DZL-LOADING-VID,  placement_name: Loading screen video,   ad_format: video,   base_daily_requests: 1600, launch_date: 2025-07-15}
+  - title_id: HTL
+    title_name: Hometown Life
+    genre: mobile_sim
+    platforms: [ios, android]
+    player_pool: 40000
+    placements:
+      - {placement_id: HTL-REWARDED-VID, placement_name: Rewarded video,         ad_format: video,   base_daily_requests: 2000, launch_date: 2025-07-15}
+      - {placement_id: HTL-INTERSTITIAL, placement_name: Interstitial,           ad_format: display, base_daily_requests: 1700, launch_date: 2025-07-15}

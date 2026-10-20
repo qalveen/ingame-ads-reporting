@@ -1,0 +1,21 @@
+campaign_id,advertiser,vertical,title_id,placement_ids,flight_start,flight_end,booked_impressions,cpm_usd,is_test,sold_by
+CMP-26-001,Voltage Energy,beverage,PFC,PFC-LED-STADIUM|PFC-KIT-SPONSOR,2026-08-01,2026-09-30,79000,12.0,False,Programmatic Guaranteed
+CMP-26-002,Summit Motors,auto,PFC,PFC-HALFTIME-VID,2026-08-15,2026-10-15,31000,28.0,False,Direct
+CMP-26-003,Peak Athletic,apparel,PFC,PFC-KIT-SPONSOR,2026-09-01,2026-10-31,45000,14.0,False,Direct
+CMP-26-004,Nimbus Streaming,media,PFC,PFC-LED-STADIUM,2026-09-20,2026-10-20,54000,11.0,False,Direct
+CMP-26-005,Crisp Chips,cpg,GRD,GRD-ENDZONE,2026-08-10,2026-09-10,32000,13.0,False,Direct
+CMP-26-006,Ironclad Insurance,finance,GRD,GRD-BROADCAST,2026-08-01,2026-09-30,36000,30.0,False,Programmatic Guaranteed
+CMP-26-007,Orbit Wireless,telecom,GRD,GRD-MENU-BANNER,2026-09-01,2026-09-30,18000,9.0,False,Direct
+CMP-26-008,Summit Motors,auto,GRD,GRD-ENDZONE|GRD-BROADCAST,2026-09-05,2026-10-31,53000,22.0,False,Direct
+CMP-26-009,Peak Athletic,apparel,GRD,GRD-SKILLS-CHAL,2026-09-10,2026-10-31,21000,18.0,False,Programmatic Guaranteed
+CMP-26-010,Halo Headphones,electronics,DZL,DZL-LOBBY-BILL,2026-08-01,2026-08-31,33000,10.0,False,Direct
+CMP-26-011,Voltage Energy,beverage,DZL,DZL-LOBBY-BILL|DZL-LOADING-VID,2026-09-01,2026-09-30,50000,15.0,False,Direct
+CMP-26-012,Nimbus Streaming,media,DZL,DZL-LOADING-VID,2026-08-20,2026-09-25,20000,24.0,False,Programmatic Guaranteed
+CMP-26-013,Lumen Bank,finance,DZL,DZL-LOBBY-BILL,2026-09-15,2026-10-15,29000,10.0,False,Direct
+CMP-26-014,FreshCart Grocery,retail,HTL,HTL-REWARDED-VID,2026-08-01,2026-09-30,57000,16.0,False,Programmatic Guaranteed
+CMP-26-015,Crisp Chips,cpg,HTL,HTL-INTERSTITIAL,2026-09-01,2026-10-31,47000,8.0,False,Direct
+CMP-26-016,Orbit Wireless,telecom,HTL,HTL-REWARDED-VID,2026-09-10,2026-10-10,20000,17.0,False,Direct
+CMP-26-017,Lumen Bank,finance,HTL,HTL-INTERSTITIAL,2026-08-01,2026-08-31,18000,8.0,False,Direct
+CMP-26-018,Halo Headphones,electronics,PFC,PFC-HALFTIME-VID,2026-09-01,2026-09-28,9000,26.0,False,Programmatic Guaranteed
+CMP-26-019,Ironclad Insurance,finance,DZL,DZL-LOADING-VID,2026-09-01,2026-09-30,12000,25.0,False,Direct
+CMP-26-T01,INTERNAL QA,test,PFC,PFC-LED-STADIUM,2026-09-01,2026-09-30,4000,0.0,True,Direct

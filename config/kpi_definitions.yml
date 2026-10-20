@@ -1,0 +1,67 @@
+# Single source of truth for KPI definitions.
+# Feeds the report's Definitions tab and docs/kpi_definitions.md (src/render_docs.py).
+kpis:
+  - name: Ad requests (avails)
+    formula: count of ad requests logged by the ad server
+    source: stg_ad_requests.ad_requests
+    notes: Proxy for available inventory. Requests that never render are not avails.
+  - name: Fill rate
+    formula: ad_server_filled / ad_requests
+    source: mart_placement_monthly, mart_title_monthly
+    notes: Includes house fills. Ad-server count, not client telemetry.
+  - name: Paid impressions
+    formula: count of de-duplicated impressions where impression_class = 'paid_in_flight'
+    source: int_impressions_classified
+    notes: Excludes house, test, orphan and out-of-flight impressions.
+  - name: Sell-through rate
+    formula: paid_impressions / ad_requests
+    source: mart_placement_monthly, mart_title_monthly
+    notes: Share of avails sold to paying advertisers.
+  - name: Viewable impressions
+    formula: "display: pct_in_view >= 50 AND in_view_ms >= 1000; video: pct_in_view >= 50 AND in_view_ms >= 2000"
+    source: stg_impressions.is_viewable
+    notes: MRC viewability standard applied to in-game client measurement.
+  - name: Viewability rate
+    formula: viewable_impressions / paid_impressions
+    source: marts
+    notes: All impressions are measured in-client, so measured rate = 100%.
+  - name: Unique reach
+    formula: count(distinct player_id) over the reporting month
+    source: marts
+    notes: Exact distinct count, not additive across titles or months. Null player_id rows excluded.
+  - name: Average frequency
+    formula: impressions_with_player / unique_reach
+    source: marts
+    notes: Numerator excludes null player_id rows so the ratio is consistent.
+  - name: Video completion rate (VCR)
+    formula: video_completes / video_starts, complete = video_played_ms >= video_duration_ms
+    source: mart_campaign_monthly, mart_placement_monthly
+    notes: Quartile flags (25/50/75%) available in stg_impressions.
+  - name: Expected impressions (month)
+    formula: booked_impressions * flight_days_in_month / flight_days
+    source: dim_campaign_month
+    notes: Straight-line proration. Traffic-weighted proration is a planned enhancement.
+  - name: Delivery % (month)
+    formula: impressions / expected_impressions_month
+    source: mart_campaign_monthly
+    notes: Month-only view. Use flight-to-date pacing for status.
+  - name: Pacing % (flight-to-date)
+    formula: delivered_to_date / (booked_impressions * flight_days_elapsed / flight_days)
+    source: mart_campaign_monthly
+    notes: "Status: < 90% UNDER-PACING, > 110% OVER-PACING, 0 impressions NO DELIVERY."
+  - name: Billable impressions
+    formula: "daily impressions capped so running total over the flight never exceeds booked (window function)"
+    source: int_campaign_daily.billable_impressions
+    notes: Over-delivery is treated as bonus / make-good, not billed.
+  - name: Revenue (USD)
+    formula: billable_impressions / 1000 * cpm_usd
+    source: mart_campaign_monthly, mart_title_monthly
+    notes: Recognized on billable delivery in the month.
+  - name: eCPM (USD)
+    formula: revenue_usd / paid_impressions * 1000
+    source: mart_title_monthly
+    notes: Effective yield per thousand paid impressions, after capping.
+  - name: Telemetry vs ad-server discrepancy
+    formula: (telemetry_impressions - ad_server_filled) / ad_server_filled
+    source: mart_placement_monthly
+    notes: "> 2% absolute flagged. Negative = client beacons lost; positive = double-firing."

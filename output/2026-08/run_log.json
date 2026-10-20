@@ -1,0 +1,256 @@
+{
+  "month": "2026-08",
+  "run_at": "2026-10-19T20:53:36",
+  "runtime_seconds": 9.7,
+  "published": "output/2026-08/AS_Inventory_Report_2026-08.xlsx",
+  "models": [
+    {
+      "layer": "staging",
+      "model": "stg_impressions",
+      "rows": 1118741,
+      "seconds": 1.71
+    },
+    {
+      "layer": "staging",
+      "model": "stg_campaign_manifest",
+      "rows": 20,
+      "seconds": 0.01
+    },
+    {
+      "layer": "staging",
+      "model": "stg_campaign_placements",
+      "rows": 23,
+      "seconds": 0.0
+    },
+    {
+      "layer": "staging",
+      "model": "stg_placements",
+      "rows": 11,
+      "seconds": 0.0
+    },
+    {
+      "layer": "staging",
+      "model": "stg_ad_requests",
+      "rows": 631,
+      "seconds": 0.04
+    },
+    {
+      "layer": "staging",
+      "model": "stg_adops_scope",
+      "rows": 8,
+      "seconds": 0.01
+    },
+    {
+      "layer": "intermediate",
+      "model": "int_impressions_classified",
+      "rows": 1118741,
+      "seconds": 1.09
+    },
+    {
+      "layer": "intermediate",
+      "model": "int_campaign_daily",
+      "rows": 604,
+      "seconds": 0.01
+    },
+    {
+      "layer": "marts",
+      "model": "dim_campaign_month",
+      "rows": 8,
+      "seconds": 0.0
+    },
+    {
+      "layer": "marts",
+      "model": "mart_campaign_monthly",
+      "rows": 8,
+      "seconds": 0.04
+    },
+    {
+      "layer": "marts",
+      "model": "mart_placement_monthly",
+      "rows": 11,
+      "seconds": 0.04
+    },
+    {
+      "layer": "marts",
+      "model": "mart_title_monthly",
+      "rows": 4,
+      "seconds": 0.05
+    },
+    {
+      "layer": "marts",
+      "model": "mart_frequency_distribution",
+      "rows": 28,
+      "seconds": 0.02
+    },
+    {
+      "layer": "marts",
+      "model": "mart_daily_title",
+      "rows": 124,
+      "seconds": 0.03
+    },
+    {
+      "layer": "marts",
+      "model": "mart_dq_summary",
+      "rows": 9,
+      "seconds": 0.03
+    }
+  ],
+  "tests": [
+    {
+      "test": "test_billable_le_booked",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "cumulative billable impressions never exceed the booked goal",
+      "sample": []
+    },
+    {
+      "test": "test_campaign_totals_reconcile",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "campaign report total equals paid in-flight impressions for in-scope campaigns (no leakage)",
+      "sample": []
+    },
+    {
+      "test": "test_excluded_lines_not_reported",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "campaigns AdOps excluded (or test lines) never appear in the report",
+      "sample": []
+    },
+    {
+      "test": "test_rate_bounds",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "all rates fall within [0, 1]",
+      "sample": []
+    },
+    {
+      "test": "test_reach_le_impressions",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "unique reach can never exceed impressions",
+      "sample": []
+    },
+    {
+      "test": "test_scope_campaigns_reported",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "every campaign AdOps marked include=Y appears in the campaign report",
+      "sample": []
+    },
+    {
+      "test": "test_title_totals_reconcile",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "title-level paid impressions equal the sum of placement-level paid impressions",
+      "sample": []
+    },
+    {
+      "test": "test_unique_impression_id",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "stg_impressions must have exactly one row per impression_id",
+      "sample": []
+    },
+    {
+      "test": "test_viewable_le_impressions",
+      "severity": "error",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "viewable impressions can never exceed impressions",
+      "sample": []
+    },
+    {
+      "test": "warn_orphan_campaigns",
+      "severity": "warn",
+      "status": "WARN",
+      "failing_rows": 1,
+      "description": "telemetry references campaign IDs missing from the AdOps manifest",
+      "sample": [
+        {
+          "campaign_id": "CMP-26-099",
+          "title_id": "DZL",
+          "impressions": "164"
+        }
+      ]
+    },
+    {
+      "test": "warn_out_of_flight",
+      "severity": "warn",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "impressions served outside the booked flight window",
+      "sample": []
+    },
+    {
+      "test": "warn_pacing",
+      "severity": "warn",
+      "status": "WARN",
+      "failing_rows": 4,
+      "description": "campaigns pacing more than 10% off goal (flight-to-date)",
+      "sample": [
+        {
+          "campaign_id": "CMP-26-012",
+          "advertiser": "Nimbus Streaming",
+          "pacing_pct_to_date": "0.787",
+          "pacing_status": "UNDER-PACING"
+        },
+        {
+          "campaign_id": "CMP-26-006",
+          "advertiser": "Ironclad Insurance",
+          "pacing_pct_to_date": "1.209",
+          "pacing_status": "OVER-PACING"
+        },
+        {
+          "campaign_id": "CMP-26-001",
+          "advertiser": "Voltage Energy",
+          "pacing_pct_to_date": "0.845",
+          "pacing_status": "UNDER-PACING"
+        },
+        {
+          "campaign_id": "CMP-26-002",
+          "advertiser": "Summit Motors",
+          "pacing_pct_to_date": "0.538",
+          "pacing_status": "UNDER-PACING"
+        }
+      ]
+    },
+    {
+      "test": "warn_source_discrepancy",
+      "severity": "warn",
+      "status": "WARN",
+      "failing_rows": 2,
+      "description": "telemetry vs ad-server fill differs by more than 2% (beacon loss or double-firing)",
+      "sample": [
+        {
+          "placement_id": "HTL-INTERSTITIAL",
+          "ad_server_filled": "46795.0",
+          "telemetry_impressions": "45373",
+          "diff_pct": "-0.0304"
+        },
+        {
+          "placement_id": "HTL-REWARDED-VID",
+          "ad_server_filled": "56999.0",
+          "telemetry_impressions": "55231",
+          "diff_pct": "-0.031"
+        }
+      ]
+    },
+    {
+      "test": "warn_zero_delivery",
+      "severity": "warn",
+      "status": "PASS",
+      "failing_rows": 0,
+      "description": "in-scope campaigns with zero delivery this month (check trafficking with AdOps)",
+      "sample": []
+    }
+  ]
+}

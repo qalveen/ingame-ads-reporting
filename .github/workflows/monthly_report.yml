@@ -1,0 +1,35 @@
+# Runs the monthly A&S report on the 3rd of each month (after AdOps scope is committed)
+# and on demand. Publishes the report + run log as a build artifact.
+name: monthly-as-report
+
+on:
+  schedule:
+    - cron: "0 15 3 * *"          # 08:00 PT on the 3rd
+  workflow_dispatch:
+    inputs:
+      month:
+        description: "Reporting month (YYYY-MM). Blank = previous month."
+        required: false
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - name: Resolve month
+        id: m
+        run: |
+          if [ -n "${{ github.event.inputs.month }}" ]; then echo "month=${{ github.event.inputs.month }}" >> $GITHUB_OUTPUT
+          else echo "month=$(date -d "$(date +%Y-%m-01) -1 day" +%Y-%m)" >> $GITHUB_OUTPUT; fi
+      - name: Generate synthetic feeds   # replace with warehouse extract in a real deployment
+        run: python src/generate_data.py
+      - name: Build, test, publish
+        run: python src/run_pipeline.py --month ${{ steps.m.outputs.month }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: as-report-${{ steps.m.outputs.month }}
+          path: output/${{ steps.m.outputs.month }}/
