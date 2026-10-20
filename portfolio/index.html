@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In-Game Ad Inventory Reporting — Calvin Magsie</title>
+<meta name="description" content="Automated monthly reporting for in-game advertising and sponsorship inventory: SQL models, data-quality gates, and a stakeholder-ready report.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F6F7F9;
+    --ink: #18202B;
+    --slate: #5A6573;
+    --rule: #DCE0E6;
+    --signal: #2457C5;
+    --board: #121821;
+    --led: #F5A524;
+    --led-dim: #6B4A12;
+    --measure: 68ch;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 17px/1.65 "Public Sans", system-ui, sans-serif;
+  }
+  img { max-width: 100%; height: auto; display: block; }
+  a { color: var(--signal); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+
+  /* top bar */
+  .top { display: flex; justify-content: space-between; align-items: baseline; padding: 28px 0 0; font-size: 15px; }
+  .top .name { font-weight: 600; color: var(--ink); text-decoration: none; }
+
+  /* hero */
+  .hero { padding: 72px 0 40px; }
+  h1, h2, h3 { font-family: "Archivo", sans-serif; font-variation-settings: "wdth" 88; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(40px, 6.4vw, 76px); line-height: 0.98; font-weight: 800; margin: 0 0 24px; max-width: 14ch; }
+  .lede { font-size: 20px; line-height: 1.55; color: var(--slate); max-width: 56ch; margin: 0 0 28px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px 32px; margin: 0; max-width: 860px; }
+  .facts dt { font-size: 13px; color: var(--slate); }
+  .facts dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
+
+  /* LED ticker: the one loud element */
+  .board {
+    background: var(--board);
+    border-block: 6px solid #0A0E14;
+    overflow: hidden;
+    margin: 8px 0 0;
+  }
+  .ticker {
+    display: flex; width: max-content;
+    font-family: "DotGothic16", monospace;
+    font-size: clamp(20px, 2.6vw, 30px);
+    color: var(--led);
+    text-shadow: 0 0 6px rgba(245,165,36,.55), 0 0 18px rgba(245,165,36,.25);
+    padding: 14px 0;
+    animation: scroll 38s linear infinite;
+    background-image: radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1.4px);
+    background-size: 5px 5px;
+  }
+  .ticker span { white-space: nowrap; padding-right: 64px; }
+  .ticker b { font-weight: 400; color: #FFE2A8; }
+  .ticker i { font-style: normal; color: var(--led-dim); text-shadow: none; padding-right: 64px; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker { animation: none; flex-wrap: wrap; width: auto; padding-inline: 16px; }
+    .ticker .dup { display: none; }
+  }
+
+  /* sections */
+  section { padding: 88px 0 0; }
+  h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.1; font-weight: 700; margin: 0 0 18px; max-width: 24ch; }
+  .prose { max-width: var(--measure); }
+  .prose p { margin: 0 0 16px; }
+
+  figure { margin: 0; }
+  .shot {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  figcaption { font-size: 14px; color: var(--slate); margin-top: 10px; max-width: 60ch; }
+  .hero-shot { margin-top: 48px; }
+  .hero-shot .shot { box-shadow: 0 30px 60px -30px rgba(24,32,43,.35); }
+
+  /* placeholder when a screenshot file is missing */
+  .missing {
+    aspect-ratio: 16 / 10;
+    display: grid; place-items: center; text-align: center;
+    border: 2px dashed var(--rule); border-radius: 6px;
+    color: var(--slate); font-size: 14px; padding: 24px; background: #fff;
+  }
+  .missing code { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+
+  /* stakeholder questions */
+  .asks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 28px; margin-top: 36px; }
+  .ask { border-top: 3px solid var(--ink); padding-top: 12px; }
+  .ask h3 { font-size: 18px; margin: 0 0 6px; font-weight: 700; }
+  .ask p { margin: 0; color: var(--slate); font-size: 16px; }
+
+  /* pipeline: a real sequence, so it is numbered */
+  .flow { list-style: none; padding: 0; margin: 36px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); counter-reset: step; }
+  .flow li { counter-increment: step; padding: 0 24px 0 0; position: relative; }
+  .flow li::before {
+    content: counter(step);
+    display: inline-grid; place-items: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--ink); color: var(--paper);
+    font: 700 14px/1 "Archivo", sans-serif; margin-bottom: 12px;
+  }
+  .flow li::after {
+    content: ""; position: absolute; top: 15px; left: 40px; right: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  .flow li:last-child::after { display: none; }
+  .flow h3 { font-size: 18px; margin: 0 0 4px; font-weight: 700; }
+  .flow p { margin: 0; font-size: 15px; color: var(--slate); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 36px; align-items: start; }
+
+  /* findings */
+  .findings { margin: 28px 0 0; padding: 0; list-style: none; max-width: var(--measure); }
+  .findings li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+  .findings strong { font-weight: 600; }
+
+  /* code */
+  pre {
+    background: var(--board); color: #E6E9EE;
+    border-radius: 6px; padding: 24px; margin: 28px 0 0;
+    overflow-x: auto; font: 14px/1.6 ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  pre .c { color: #7F8A99; }
+  pre .k { color: #8FB4FF; }
+  pre .h { color: var(--led); }
+
+  .next { columns: 2 280px; column-gap: 40px; margin-top: 24px; max-width: 900px; }
+  .next p { break-inside: avoid; margin: 0 0 16px; }
+
+  footer { margin-top: 104px; padding: 32px 0 48px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 12px 32px; justify-content: space-between; font-size: 15px; color: var(--slate); }
+
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    .hero { padding-top: 48px; }
+    .pair { grid-template-columns: 1fr; }
+    .flow li { padding: 0 0 24px; }
+    .flow li::after { display: none; }
+    section { padding-top: 64px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="name" href="/">Calvin Magsie</a>
+  <a href="https://github.com/qalveen/ingame-ads-reporting">View the code on GitHub</a>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <h1>In-game ad inventory reporting</h1>
+    <p class="lede">The monthly report an Ads &amp; Sponsorships team runs on, rebuilt as a pipeline. One command turns raw game telemetry and the AdOps campaign book into a tested, reproducible report for Sales, AdOps, Product, and Revenue Strategy.</p>
+    <dl class="facts">
+      <div><dt>Role</dt><dd>Solo project: design, SQL, Python</dd></div>
+      <div><dt>Stack</dt><dd>Python, SQL, DuckDB, BigQuery, GitHub Actions</dd></div>
+      <div><dt>Scale</dt><dd>4 titles, 11 placements, 1.1M events</dd></div>
+      <div><dt>Data</dt><dd>Simulated, with real-world defects built in</dd></div>
+    </dl>
+  </div>
+
+  <div class="board" role="img" aria-label="September 2026 results: 331,168 paid impressions, 45.5% sell-through, 77.7% viewability, $15.26 eCPM, 14 automated checks with 0 blocking failures.">
+    <div class="ticker" aria-hidden="true">
+      <span>SEP 2026 <b>331,168</b> PAID IMPRESSIONS</span><i>●</i>
+      <span>SELL-THROUGH <b>45.5%</b></span><i>●</i>
+      <span>VIEWABILITY <b>77.7%</b></span><i>●</i>
+      <span>eCPM <b>$15.26</b></span><i>●</i>
+      <span>14 CHECKS <b>0</b> BLOCKING</span><i>●</i>
+      <span class="dup">SEP 2026 <b>331,168</b> PAID IMPRESSIONS</span><i class="dup">●</i>
+      <span class="dup">SELL-THROUGH <b>45.5%</b></span><i class="dup">●</i>
+      <span class="dup">VIEWABILITY <b>77.7%</b></span><i class="dup">●</i>
+      <span class="dup">eCPM <b>$15.26</b></span><i class="dup">●</i>
+      <span class="dup">14 CHECKS <b>0</b> BLOCKING</span><i class="dup">●</i>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <figure class="hero-shot">
+      <div class="shot"><img src="images/01-summary.png" alt="Summary tab of the September 2026 report: KPI tiles, auto-written callouts, and a title-level table with month-over-month change." width="2210" height="1095"></div>
+      <figcaption>The Summary tab. KPI tiles, callouts, and month-over-month figures are all written by the pipeline, not by hand.</figcaption>
+    </figure>
+
+    <section aria-labelledby="problem">
+      <h2 id="problem">Four teams, one monthly report</h2>
+      <div class="prose">
+        <p>Game publishers sell branded space inside their games: stadium boards, end-zone logos, lobby billboards, loading-screen video, mobile rewarded ads. Every month, the people selling and running that inventory need the same report, and each team reads it for a different answer.</p>
+        <p>Built by hand, that report means exports from every studio, a campaign list pasted in from email, and pivot tables that never quite tie out. Nobody can reproduce last month's numbers.</p>
+      </div>
+      <div class="asks">
+        <div class="ask"><h3>Sales</h3><p>How much inventory did we have, and how much of it did we sell?</p></div>
+        <div class="ask"><h3>AdOps</h3><p>Which campaigns are behind or ahead of what we booked?</p></div>
+        <div class="ask"><h3>Product</h3><p>Is the placement we just launched actually working?</p></div>
+        <div class="ask"><h3>Revenue Strategy</h3><p>What did we earn, and at what price per thousand impressions?</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="how">
+      <h2 id="how">How the monthly run works</h2>
+      <ol class="flow">
+        <li><h3>Agree on scope</h3><p>AdOps approves which campaigns count this month. Without that file, the run stops.</p></li>
+        <li><h3>Clean</h3><p>Duplicate events are removed and the MRC viewability standard is applied once.</p></li>
+        <li><h3>Classify</h3><p>Every impression lands in a bucket: paid, house, test, out of flight, or unknown campaign.</p></li>
+        <li><h3>Check</h3><p>14 SQL checks run. Any blocking failure stops the report from going out.</p></li>
+        <li><h3>Publish</h3><p>A 9-tab Excel report, charts, and a run log for audit.</p></li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="found">
+      <h2 id="found">What September's report surfaced</h2>
+      <div class="pair">
+        <figure>
+          <div class="shot"><img src="images/02-pacing.png" alt="Bar chart of flight-to-date pacing by campaign. Four campaigns fall below the 90% tolerance band, three exceed 110%, and one has no delivery." width="1260" height="644"></div>
+          <figcaption>Pacing against goal. Under-delivery goes to AdOps; over-delivery is capped so it never reaches an invoice.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="images/03-campaign-detail.png" alt="Campaign Detail tab with pacing status shaded red, amber, or green for each campaign." onerror="this.parentElement.outerHTML='<div class=missing><span><code>images/03-campaign-detail.png</code>Campaign Detail tab, Pacing Status column visible</span></div>'"></div>
+          <figcaption>Campaign detail: delivery, viewability, reach, frequency, and billable revenue per campaign.</figcaption>
+        </figure>
+      </div>
+      <ul class="findings">
+        <li><strong>Four placements below 70% viewability.</strong> The kit sponsor overlay sat at 29%, a creative-size conversation for Product.</li>
+        <li><strong>Four campaigns under-pacing, one never delivered.</strong> The worst was 8,000 impressions behind goal.</li>
+        <li><strong>New inventory with room to sell.</strong> The new skills-challenge placement had 98% viewability but only 30% sell-through.</li>
+        <li><strong>A gap on mobile.</strong> Game telemetry ran about 3% below the ad server, a sign of lost tracking events, flagged for AdTech.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="trust">
+      <h2 id="trust">Numbers you can defend</h2>
+      <p class="prose">A report four teams depend on has to be right before it is fast. Every run checks itself, and a failed check means nothing gets published.</p>
+      <div class="pair">
+        <figure>
+          <div class="shot"><img src="images/04-data-quality.png" alt="Data Quality tab listing data-quality counts and each automated check with its pass or warning status." onerror="this.parentElement.outerHTML='<div class=missing><span><code>images/04-data-quality.png</code>Data Quality tab, test results table</span></div>'"></div>
+          <figcaption>The Data Quality tab: what was removed, what was quarantined, and every check's result.</figcaption>
+        </figure>
+        <figure>
+          <div class="shot"><img src="images/05-terminal.png" alt="Terminal output of the pipeline building each model and running checks, ending with 9 passed, 5 warnings, 0 failed." onerror="this.parentElement.outerHTML='<div class=missing><span><code>images/05-terminal.png</code>Terminal: python3 src/run_pipeline.py --month 2026-09</span></div>'"></div>
+          <figcaption>One command, about six seconds: models, checks, then publish.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section aria-labelledby="sql">
+      <h2 id="sql">The billing rule, in SQL</h2>
+      <p class="prose">Advertisers pay for what they booked, not for over-delivery. A running total over each campaign's flight caps billable impressions at the booked goal.</p>
+<pre><code><span class="k">with</span> running <span class="k">as</span> (
+    <span class="k">select</span> d.*, m.booked_impressions,
+           <span class="k">sum</span>(d.impressions) <span class="k">over</span> (
+               <span class="k">partition by</span> d.campaign_id <span class="k">order by</span> d.event_date
+               <span class="k">rows between unbounded preceding and current row</span>
+           ) <span class="k">as</span> cum_impressions
+    <span class="k">from</span> daily d <span class="k">join</span> stg_campaign_manifest m <span class="k">using</span> (campaign_id)
+)
+<span class="k">select</span> campaign_id, event_date, impressions,
+       <span class="c">-- only bill up to the booked goal; anything past it is bonus delivery</span>
+       <span class="h">greatest(0, least(impressions,
+           booked_impressions - (cum_impressions - impressions)))</span> <span class="k">as</span> billable_impressions
+<span class="k">from</span> running</code></pre>
+    </section>
+
+    <section aria-labelledby="next">
+      <h2 id="next">What I would build next</h2>
+      <div class="next">
+        <p><strong>Dashboards per team.</strong> Live views on the same tables for Sales, AdOps, and Revenue Strategy, with access limited by role.</p>
+        <p><strong>Mobile reconciliation.</strong> Match ad-server and game events one by one instead of by day, using the mediation feed.</p>
+        <p><strong>Smarter goals.</strong> Spread each booked goal by forecast traffic rather than evenly across the flight.</p>
+        <p><strong>Direct feeds.</strong> Land ad-server exports in BigQuery and pull the AdOps scope from a shared sheet, removing the last manual hand-offs.</p>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="wrap">
+  <span>Calvin Magsie, Business Analyst</span>
+  <a href="https://github.com/qalveen/ingame-ads-reporting">github.com/qalveen/ingame-ads-reporting</a>
+</footer>
+
+</body>
+</html>
