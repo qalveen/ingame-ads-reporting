@@ -1,20 +1,20 @@
 {
   "month": "2026-09",
-  "run_at": "2026-10-19T20:55:08",
-  "runtime_seconds": 5.5,
+  "run_at": "2026-10-19T21:00:03",
+  "runtime_seconds": 5.1,
   "published": "output/2026-09/AS_Inventory_Report_2026-09.xlsx",
   "models": [
     {
       "layer": "staging",
       "model": "stg_impressions",
       "rows": 1118741,
-      "seconds": 1.95
+      "seconds": 1.54
     },
     {
       "layer": "staging",
       "model": "stg_campaign_manifest",
       "rows": 20,
-      "seconds": 0.02
+      "seconds": 0.01
     },
     {
       "layer": "staging",
@@ -32,7 +32,7 @@
       "layer": "staging",
       "model": "stg_ad_requests",
       "rows": 631,
-      "seconds": 0.07
+      "seconds": 0.04
     },
     {
       "layer": "staging",
@@ -44,7 +44,7 @@
       "layer": "intermediate",
       "model": "int_impressions_classified",
       "rows": 1118741,
-      "seconds": 1.25
+      "seconds": 1.13
     },
     {
       "layer": "intermediate",
@@ -68,13 +68,13 @@
       "layer": "marts",
       "model": "mart_placement_monthly",
       "rows": 11,
-      "seconds": 0.06
+      "seconds": 0.05
     },
     {
       "layer": "marts",
       "model": "mart_title_monthly",
       "rows": 4,
-      "seconds": 0.09
+      "seconds": 0.08
     },
     {
       "layer": "marts",
@@ -92,7 +92,7 @@
       "layer": "marts",
       "model": "mart_dq_summary",
       "rows": 9,
-      "seconds": 0.04
+      "seconds": 0.03
     }
   ],
   "tests": [
