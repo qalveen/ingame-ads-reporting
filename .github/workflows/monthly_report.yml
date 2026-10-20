@@ -3,8 +3,6 @@
 name: monthly-as-report
 
 on:
-  schedule:
-    - cron: "0 15 3 * *"          # 08:00 PT on the 3rd
   workflow_dispatch:
     inputs:
       month:
